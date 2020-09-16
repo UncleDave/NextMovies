@@ -39,3 +39,9 @@ export default function MovieDetail({ movie }: MovieDetailProps) {
     </>
   );
 }
+
+// TODO: The rest of this page :D
+// TODO: Newsletter modal.
+
+// Newsletter modal could be toggled by placing a bool in the component's state to indicate whether or not the modal is visible.
+// Fire off a setTimeout in a dependency-less useEffect which flips the bool after 10 seconds and show the modal.

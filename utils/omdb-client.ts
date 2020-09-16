@@ -53,6 +53,9 @@ interface OmdbGetSuccessResponse extends OmdbResponseBase, OmdbMovie {
 
 type OmdbGetResponse = OmdbErrorResponse | OmdbGetSuccessResponse;
 
+// The public methods of this class could be memoized to provide a quick and dirty memory cache based on parameters.
+// Since the data being queried is fairly stable the cache could last at least a day before expiring.
+// For a cache that persists between server restarts something like Redis would be the next logical step.
 export class OmdbClient {
   private static API_URL = 'https://www.omdbapi.com';
 
@@ -93,6 +96,8 @@ export class OmdbClient {
   private static convertToMovieModel(omdbMovie: OmdbMovie): MovieModel {
     return {
       ...omdbMovie,
+      // Add a more url friendly slug. This is somewhat dangerous as the slugification process is destructive and the data source is third party.
+      // If too much information is lost the data could become inaccessible, but fortunately this particular API does enough fuzzy matching to not pose a problem.
       slug: slugify(omdbMovie.title, { lower: true })
     };
   }

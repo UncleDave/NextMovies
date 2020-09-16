@@ -89,3 +89,6 @@ export default function Dashboard({ movies }: DashboardProps) {
     </>
   );
 }
+
+// TODO: Pagination.
+// TODO: Filter movies/series only.
