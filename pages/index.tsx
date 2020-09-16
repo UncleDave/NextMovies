@@ -1,42 +1,74 @@
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
+import MovieModel from '../models/movie';
 import movieStyles from '../styles/Movie.module.css';
 import movieListStyles from '../styles/MovieList.module.css';
+import { getMovies } from './api/movies';
 
-function Movie() {
+interface MovieProps {
+  movie: MovieModel;
+}
+
+function Movie({ movie }: MovieProps) {
   return (
     <div className={ movieStyles.container }>
       <div className={ movieStyles.poster }>
-        <img src="https://m.media-amazon.com/images/M/MV5BMTk5MTI3NjI5OV5BMl5BanBnXkFtZTcwMDc5MTk1OA@@._V1_SX300.jpg" alt="Movie Poster"/>
+        {
+          movie.poster !== 'N/A'
+            ? <img src={ movie.poster } alt={ `${ movie.title } poster` }/>
+            : (
+              <div className={ movieStyles.noPoster }>
+                <div>No Poster Available</div>
+              </div>
+            )
+        }
       </div>
       <div className={ movieStyles.content }>
-        <h3 className={ movieStyles.title }>Title</h3>
+        <h3 className={ movieStyles.title }>{ movie.title }</h3>
 
-        <p className={ movieStyles.description }>Description</p>
+        <dl>
+          <dt>Type</dt>
+          <dd>{ movie.type }</dd>
+
+          <dt>Year</dt>
+          <dd>{ movie.year }</dd>
+        </dl>
       </div>
     </div>
   );
 }
 
-function MovieList() {
+interface MovieListProps {
+  movies: MovieModel[];
+}
+
+function MovieList({ movies }: MovieListProps) {
   return (
     <ul className={ movieListStyles.container }>
-      <li className={ movieListStyles.item }>
-        <Movie/>
-      </li>
-      <li className={ movieListStyles.item }>
-        <Movie/>
-      </li>
-      <li className={ movieListStyles.item }>
-        <Movie/>
-      </li>
-      <li className={ movieListStyles.item }>
-        <Movie/>
-      </li>
+      {
+        movies.map(x => (
+          <li key={ x.imdbId } className={ movieListStyles.item }>
+            <Movie movie={ x }/>
+          </li>
+        ))
+      }
     </ul>
   );
 }
 
-export default function Dashboard() {
+interface DashboardProps {
+  movies: MovieModel[];
+}
+
+export const getServerSideProps: GetServerSideProps<DashboardProps> = async () => {
+  return {
+    props: {
+      movies: await getMovies(1)
+    }
+  };
+};
+
+export default function Dashboard({ movies }: DashboardProps) {
   return (
     <>
       <Head>
@@ -47,7 +79,7 @@ export default function Dashboard() {
       <main>
         <h1 style={ { textAlign: 'center' } }>Next Movies</h1>
 
-        <MovieList/>
+        <MovieList movies={ movies }/>
       </main>
     </>
   );

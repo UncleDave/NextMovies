@@ -10,12 +10,20 @@
   width: 100%;
 }
 
-.content .title {
-  margin: 0;
-  padding: 0 5px;
-  text-align: center;
+.poster .noPoster {
+  width: 150px;
+  height: 250px;
+  background-color: #cdcdcd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.content .description {
+.content {
   padding: 0 5px;
+}
+
+.content .title {
+  margin: 0;
+  text-align: center;
 }
