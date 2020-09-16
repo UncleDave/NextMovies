@@ -4,4 +4,5 @@
   imdbId: string;
   type: 'movie' | 'series';
   poster: string;
+  slug: string;
 }

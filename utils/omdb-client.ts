@@ -1,24 +1,59 @@
 ﻿import camelcaseKeys from 'camelcase-keys';
+import slugify from 'slugify';
 import MovieModel from '../models/movie';
+import MovieDetailModel from '../models/movie-detail';
 
-interface OmdbSearchResponseBase {
+interface OmdbMovie {
+  title: string;
+  year: string;
+  imdbId: string;
+  type: 'movie' | 'series';
+  poster: string;
+}
+
+interface OmdbResponseBase {
   response: 'True' | 'False';
 }
 
-interface OmdbSearchErrorResponse extends OmdbSearchResponseBase {
+interface OmdbErrorResponse extends OmdbResponseBase {
   response: 'False';
   error: string;
 }
 
-interface OmdbSearchSuccessResponse extends OmdbSearchResponseBase {
+interface OmdbSearchSuccessResponse extends OmdbResponseBase {
   response: 'True';
-  search: MovieModel[];
+  search: OmdbMovie[];
   totalResults: string;
 }
 
-type OmdbSearchResponse = OmdbSearchErrorResponse | OmdbSearchSuccessResponse;
+type OmdbSearchResponse = OmdbErrorResponse | OmdbSearchSuccessResponse;
 
-export default class OmdbClient {
+interface OmdbGetSuccessResponse extends OmdbResponseBase, OmdbMovie {
+  response: 'True';
+  rated: string;
+  released: string;
+  runtime: string;
+  genre: string;
+  director: string;
+  writer: string;
+  actors: string;
+  plot: string;
+  language: string;
+  country: string;
+  awards: string;
+  ratings: {
+    source: string,
+    value: string
+  }[];
+  metascore: string;
+  imdbRating: string;
+  imdbVotes: string;
+  totalSeasons?: string;
+}
+
+type OmdbGetResponse = OmdbErrorResponse | OmdbGetSuccessResponse;
+
+export class OmdbClient {
   private static API_URL = 'https://www.omdbapi.com';
 
   constructor(private apiKey: string) { }
@@ -30,9 +65,47 @@ export default class OmdbClient {
       page: page.toString()
     });
 
-    const response = await fetch(`${ OmdbClient.API_URL }?${ params }`);
-    const data = camelcaseKeys<OmdbSearchResponse>(await response.json(), { deep: true });
+    const data = await OmdbClient.makeRequest<OmdbSearchResponse>(params);
 
-    return data.response === 'True' ? data.search : [];
+    return data.response === 'True' ? data.search.map(OmdbClient.convertToMovieModel) : [];
+  }
+
+  async getMovie(title: string): Promise<MovieDetailModel | null> {
+    const params = new URLSearchParams({
+      apikey: this.apiKey,
+      t: title,
+      plot: 'full'
+    });
+
+    const data = await OmdbClient.makeRequest<OmdbGetResponse>(params);
+
+    return data.response === 'True' ? data : null;
+  }
+
+  private static async makeRequest<T>(params: URLSearchParams): Promise<T> {
+    const response = await fetch(`${ OmdbClient.API_URL }?${ params }`);
+
+    // Ideally when this data arrives we should cleanse it a bit and transform it for our needs.
+    // For now just camelcasing the keys will do.
+    return camelcaseKeys<T>(await response.json(), { deep: true });
+  }
+
+  private static convertToMovieModel(omdbMovie: OmdbMovie): MovieModel {
+    return {
+      ...omdbMovie,
+      slug: slugify(omdbMovie.title, { lower: true })
+    };
   }
 }
+
+// I want to re-use one instance of OmdbClient so instantiate and export it here, but ideally the instantiation would occur somewhere else
+// and this file should just provide the class definition.
+
+const omdbApiKey = process.env.OMDB_API_KEY;
+
+if (!omdbApiKey)
+  throw new Error('No OMDB_API_KEY environment variable found');
+
+const omdbClient = new OmdbClient(omdbApiKey);
+
+export default omdbClient;

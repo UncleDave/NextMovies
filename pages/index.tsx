@@ -1,5 +1,6 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
+import Header from '../components/header';
 import MovieModel from '../models/movie';
 import movieStyles from '../styles/Movie.module.css';
 import movieListStyles from '../styles/MovieList.module.css';
@@ -10,21 +11,25 @@ interface MovieProps {
 }
 
 function Movie({ movie }: MovieProps) {
+  const url = `/movie/${ encodeURIComponent(movie.slug) }`;
+
   return (
     <div className={ movieStyles.container }>
       <div className={ movieStyles.poster }>
-        {
-          movie.poster !== 'N/A'
-            ? <img src={ movie.poster } alt={ `${ movie.title } poster` }/>
-            : (
-              <div className={ movieStyles.noPoster }>
-                <div>No Poster Available</div>
-              </div>
-            )
-        }
+        <a href={ url }>
+          {
+            movie.poster !== 'N/A'
+              ? <img src={ movie.poster } alt={ `${ movie.title } poster` }/>
+              : (
+                <div className={ movieStyles.noPoster }>
+                  <div>No Poster Available</div>
+                </div>
+              )
+          }
+        </a>
       </div>
       <div className={ movieStyles.content }>
-        <h3 className={ movieStyles.title }>{ movie.title }</h3>
+        <a href={ url }><h3 className={ movieStyles.title }>{ movie.title }</h3></a>
 
         <dl>
           <dt>Type</dt>
@@ -77,7 +82,7 @@ export default function Dashboard({ movies }: DashboardProps) {
       </Head>
 
       <main>
-        <h1 style={ { textAlign: 'center' } }>Next Movies</h1>
+        <Header value="Next Movies"/>
 
         <MovieList movies={ movies }/>
       </main>
