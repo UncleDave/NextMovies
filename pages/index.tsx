@@ -1,5 +1,6 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import Header from '../components/header';
 import MovieModel from '../models/movie';
 import movieStyles from '../styles/Movie.module.css';
@@ -16,20 +17,22 @@ function Movie({ movie }: MovieProps) {
   return (
     <div className={ movieStyles.container }>
       <div className={ movieStyles.poster }>
-        <a href={ url }>
-          {
-            movie.poster !== 'N/A'
-              ? <img src={ movie.poster } alt={ `${ movie.title } poster` }/>
-              : (
-                <div className={ movieStyles.noPoster }>
-                  <div>No Poster Available</div>
-                </div>
-              )
-          }
-        </a>
+        <Link href={ url }>
+          <a>
+            {
+              movie.poster !== 'N/A'
+                ? <img src={ movie.poster } alt={ `${ movie.title } poster` }/>
+                : (
+                  <div className={ movieStyles.noPoster }>
+                    <div>No Poster Available</div>
+                  </div>
+                )
+            }
+          </a>
+        </Link>
       </div>
       <div className={ movieStyles.content }>
-        <a href={ url }><h3 className={ movieStyles.title }>{ movie.title }</h3></a>
+        <Link href={ url }><a><h3 className={ movieStyles.title }>{ movie.title }</h3></a></Link>
 
         <dl>
           <dt>Type</dt>
